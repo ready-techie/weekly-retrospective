@@ -7,19 +7,19 @@ assignees: ''
 
 ---
 
-`What did I Do?`
+### 🎯 What did I Do?
 
 
 
-`What went WELL?` 
+###  🏄 What went WELL?
 
 
 
-`What could have gone BETTER?`
+### 🤨 What could have gone BETTER?
 
 
 
-`What did I LEARN?`
+### 🧐 What did I LEARN?
 
 
 
