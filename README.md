@@ -1,4 +1,4 @@
-# daily-Retrospective
+# weekly-retrospective
 자아비판이 아닌 건전한 회고! 회고 주기는 기본 1주(필요에 따라 1일로 하기도 함) 회고를 통해 더 성장하는 소프트웨어 엔지니어가 되자!😁
 ![img](https://miro.medium.com/max/3816/1*cvnWXRKpbiMNPAUz5Vex9A.png)
 ### [Daily Issue](https://github.com/ready-techie/daily-Retrospective/issues)
