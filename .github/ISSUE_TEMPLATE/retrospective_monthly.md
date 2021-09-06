@@ -10,7 +10,7 @@ assignees: ''
 # Sprint Retrospective - 4 Weeks
 
 | **Satisfaction-level  and Value** | **Justification** |
-|:--|:--:|
+|--:|:--:|
 | Very  Happy (5)                       |                         |
 | Happy  (4)                               |                         |
 | Okay  (3)                                 |                         |
