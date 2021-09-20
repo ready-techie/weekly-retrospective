@@ -6,5 +6,10 @@
 2. 잘한 부분은? => 강화시키기
 3. 못한 부분은? => 원인 파악 후 개선
 
+### [Monthly Issue](https://github.com/ready-techie/weekly-Retrospective/issues)
+1. 뭘 했는가?
+2. 잘한 부분은? => 강화시키기
+3. 못한 부분은? => 원인 파악 후 개선
+
 ### Files
 ..TBD
