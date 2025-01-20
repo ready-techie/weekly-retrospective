@@ -28,4 +28,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3 # Automatically deploys to GitHub Pages
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }} # GitHub token to authenticate the action
-          publish_dir: ./build # Replace this with the path to your build directory (e.g., ./dist, ./build)
+          publish_dir: ./dist # Replace this with the path to your build directory (e.g., ./dist, ./build)
