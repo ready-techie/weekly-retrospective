@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import dayjs from "dayjs";
+import ViewPost from "./ViewPost"; // ViewPost 컴포넌트 import
 
 function App() {
   const [posts, setPosts] = useState([]);
@@ -12,7 +14,6 @@ function App() {
           filePath.split("/")[3].split("-").slice(0, 3).join("-")
         );
         const player = filePath.split("/")[3].split("-").slice(-1);
-        console.log(player);
         return { filePath, date, player };
       });
 
@@ -24,21 +25,28 @@ function App() {
     fetchPosts();
   }, []);
 
-  const handlePostClick = (filePath) => {
-    //Todo
-  };
-
   return (
-    <div>
-      <h1>🦄RT Retro</h1>
-      {posts.map((post, index) => (
-        <div key={index} onClick={() => handlePostClick(post.filePath)}>
-          <p>
-            {post.date.format("YYYY-MM-DD")} {post.player}
-          </p>
-        </div>
-      ))}
-    </div>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div>
+              {posts.map((post, index) => (
+                <div key={index}>
+                  <Link to={`/${encodeURIComponent(post.filePath)}`}>
+                    <p>
+                      {post.date.format("YYYY-MM-DD")} {post.player}
+                    </p>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          }
+        />
+        <Route path="/:filePath" element={<ViewPost />} />
+      </Routes>
+    </Router>
   );
 }
 

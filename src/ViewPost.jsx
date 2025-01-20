@@ -1,32 +1,40 @@
 import { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { useParams } from "react-router-dom";
 import dayjs from "dayjs";
 
-function ViewPost(file) {
-  const [post, setPost] = useState([]);
+function ViewPost() {
+  const { filePath } = useParams(); // URL에서 filePath 파라미터를 가져옴
+  const [post, setPost] = useState(null);
 
   useEffect(() => {
-    const loadPosts = async () => {
-      const content = await Promise(async () => {
-        const response = await fetch(file);
-        const content = await response.text();
-        const date = dayjs(file.split("/")[2].split("-").slice(0, 3).join("-")); // 파일명에서 날짜 추출
-        console.log(file.split("/")[2]);
-        return { date, content };
-      });
-      setPost(content);
+    const loadPost = async () => {
+      const response = await fetch(filePath);
+      const content = await response.text();
+      const date = dayjs(
+        filePath.split("/")[3].split("-").slice(0, 3).join("-")
+      );
+      const player = filePath
+        .split("/")[3]
+        .split("-")
+        .slice(-1)[0]
+        .replace(".md", "");
+      setPost({ date, content, player });
     };
 
-    loadPosts();
-  }, []);
+    loadPost();
+  }, [filePath]);
+
+  if (!post) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div>
-      <h1>My Blog</h1>
-      <div>
-        <h2>{post.date.format("YYYY-MM-DD")}</h2>
-        <ReactMarkdown>{post.content}</ReactMarkdown>
-      </div>
+      <h2>
+        {post.date.format("YYYY-MM-DD")} by {post.player}
+      </h2>
+      <ReactMarkdown>{post.content}</ReactMarkdown>
     </div>
   );
 }
