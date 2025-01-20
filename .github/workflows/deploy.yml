@@ -3,7 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches:
-      - main # Trigger the action when pushing to the 'main' branch
+      - gh-pages # Trigger the action
 
 jobs:
   deploy:
