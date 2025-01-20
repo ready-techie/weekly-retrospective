@@ -16,7 +16,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3 # Set up Node.js environment
         with:
-          node-version: "16" # Choose the Node.js version you need (adjust as needed)
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install # Installs the project dependencies
