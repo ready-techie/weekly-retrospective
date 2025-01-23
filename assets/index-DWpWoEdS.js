@@ -9602,18 +9602,15 @@ var dayjs_minExports = requireDayjs_min();
 const dayjs = /* @__PURE__ */ getDefaultExportFromCjs(dayjs_minExports);
 function App() {
   const [posts, setPosts] = reactExports.useState([]);
-  const mdFiles = ["/weekly/2025-01-12-Anne.md", "/weekly/2025-01-19-Anne.md"];
   reactExports.useEffect(() => {
     const fetchPosts = async () => {
-      const postFiles = /* @__PURE__ */ Object.assign({ "/README.md": () => __vitePreload(() => import("./README-i3lNGqXp.js"), true ? [] : void 0), "/public/templates/weekly1.md": () => __vitePreload(() => import("./weekly1-CbHS6a57.js"), true ? [] : void 0), "/public/weekly/2025-01-12-Anne.md": () => __vitePreload(() => import("./2025-01-12-Anne-CS7prWtz.js"), true ? [] : void 0), "/public/weekly/2025-01-19-Anne.md": () => __vitePreload(() => import("./2025-01-19-Anne-BqO3T_Z5.js"), true ? [] : void 0), "/src/weekly/2025-01-12-Anne.md": () => __vitePreload(() => import("./2025-01-12-Anne-u78yy-I3.js"), true ? [] : void 0), "/src/weekly/2025-01-19-Anne.md": () => __vitePreload(() => import("./2025-01-19-Anne-BadzgLM-.js"), true ? [] : void 0) });
+      const postFiles = /* @__PURE__ */ Object.assign({ "/src/weekly/2025-01-12-Anne.md": () => __vitePreload(() => import("./2025-01-12-Anne-CS7prWtz.js"), true ? [] : void 0), "/src/weekly/2025-01-19-Anne.md": () => __vitePreload(() => import("./2025-01-19-Anne-BqO3T_Z5.js"), true ? [] : void 0) });
       console.log("postfiles", postFiles);
-      const postPromises = mdFiles.map(async (filePath) => {
-        console.log("Patttthhh", filePath);
-        const date = dayjs(
-          filePath.split("/")[2].split("-").slice(0, 3).join("-")
-        );
-        const player = filePath.split("/")[2].split("-").slice(-1);
-        return { filePath, date, player };
+      const postPromises = postFiles.map(async (name) => {
+        console.log("Patttthhh", name);
+        const date = dayjs(name.split("/")[2].split("-").slice(0, 3).join("-"));
+        const player = name.split("/")[2].split("-").slice(-1);
+        return { filePath: name, date, player };
       });
       const posts2 = await Promise.all(postPromises);
       posts2.sort((a, b) => b.date - a.date);
