@@ -9538,11 +9538,10 @@ var dayjs_minExports = requireDayjs_min();
 const dayjs = /* @__PURE__ */ getDefaultExportFromCjs(dayjs_minExports);
 function App() {
   const [posts, setPosts] = reactExports.useState([]);
+  const mdFiles = ["/weekly/2025-01-12-Anne.md", "/weekly/2025-01-19-Anne.md"];
   reactExports.useEffect(() => {
     const fetchPosts = async () => {
-      const postFiles = /* @__PURE__ */ Object.assign({});
-      console.log("gettt2", postFiles);
-      const postPromises = Object.keys(postFiles).map(async (filePath) => {
+      const postPromises = mdFiles.map(async (filePath) => {
         const date = dayjs(
           filePath.split("/")[3].split("-").slice(0, 3).join("-")
         );
