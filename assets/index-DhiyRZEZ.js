@@ -9606,11 +9606,13 @@ function App() {
     const fetchPosts = async () => {
       const postFiles = /* @__PURE__ */ Object.assign({ "/src/weekly/2025-01-12-Anne.md": () => __vitePreload(() => import("./2025-01-12-Anne-CS7prWtz.js"), true ? [] : void 0), "/src/weekly/2025-01-19-Anne.md": () => __vitePreload(() => import("./2025-01-19-Anne-BqO3T_Z5.js"), true ? [] : void 0) });
       console.log("postfiles", postFiles);
-      const postPromises = postFiles.map(async (name) => {
-        console.log("Patttthhh", name);
-        const date = dayjs(name.split("/")[2].split("-").slice(0, 3).join("-"));
-        const player = name.split("/")[2].split("-").slice(-1);
-        return { filePath: name, date, player };
+      const postPromises = Object.keys(postFiles).map(async (filePath) => {
+        console.log("Patttthhh", filePath);
+        const date = dayjs(
+          filePath.split("/")[2].split("-").slice(0, 3).join("-")
+        );
+        const player = filePath.split("/")[2].split("-").slice(-1);
+        return { filePath, date, player };
       });
       const posts2 = await Promise.all(postPromises);
       posts2.sort((a, b) => b.date - a.date);
