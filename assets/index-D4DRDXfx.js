@@ -9542,6 +9542,7 @@ function App() {
   reactExports.useEffect(() => {
     const fetchPosts = async () => {
       const postPromises = mdFiles.map(async (filePath) => {
+        console.log("Patttthhh", filePath);
         const date = dayjs(
           filePath.split("/")[3].split("-").slice(0, 3).join("-")
         );
