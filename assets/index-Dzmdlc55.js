@@ -9609,12 +9609,13 @@ function App() {
         const date = dayjs(
           filePath.split("/")[3].split("-").slice(0, 3).join("-")
         );
-        const player = filePath.split("/")[3].split("-").slice(-1);
+        const player = filePath.split("/")[3].split("-").slice(-1)[0];
         console.log({ filePath, date, player });
         return { filePath, date, player };
       });
       const posts2 = await Promise.all(postPromises);
       posts2.sort((a, b) => b.date - a.date);
+      console.log(posts2);
       setPosts(posts2);
     };
     fetchPosts();
