@@ -9605,13 +9605,12 @@ function App() {
   reactExports.useEffect(() => {
     const fetchPosts = async () => {
       const postFiles = /* @__PURE__ */ Object.assign({ "/src/weekly/2025-01-12-Anne.md": () => __vitePreload(() => import("./2025-01-12-Anne-CS7prWtz.js"), true ? [] : void 0), "/src/weekly/2025-01-19-Anne.md": () => __vitePreload(() => import("./2025-01-19-Anne-BqO3T_Z5.js"), true ? [] : void 0) });
-      console.log("postfiles", postFiles);
       const postPromises = Object.keys(postFiles).map(async (filePath) => {
-        console.log("Patttthhh", filePath.split("/"));
         const date = dayjs(
           filePath.split("/")[3].split("-").slice(0, 3).join("-")
         );
         const player = filePath.split("/")[3].split("-").slice(-1);
+        console.log({ filePath, date, player });
         return { filePath, date, player };
       });
       const posts2 = await Promise.all(postPromises);
