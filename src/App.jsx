@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import dayjs from "dayjs";
-import ViewPost from "./ViewPost"; // ViewPost 컴포넌트 import
+import ViewPost from "./ViewPost";
 
 function App() {
   const [posts, setPosts] = useState([]);
+
+  const mdFiles = ["/weekly/2025-01-12-Anne.md", "/weekly/2025-01-19-Anne.md"];
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -13,12 +15,18 @@ function App() {
         const date = dayjs(
           filePath.split("/")[3].split("-").slice(0, 3).join("-")
         );
-        const player = filePath.split("/")[3].split("-").slice(-1);
+        const player = filePath
+          .split("/")[3]
+          .split("-")
+          .slice(-1)[0]
+          .replace(".md", "");
+        console.log({ filePath, date, player });
         return { filePath, date, player };
       });
 
       const posts = await Promise.all(postPromises);
-      posts.sort((a, b) => b.date - a.date); // 날짜 역순으로 정렬
+      posts.sort((a, b) => b.date - a.date);
+      console.log(posts);
       setPosts(posts);
     };
 
