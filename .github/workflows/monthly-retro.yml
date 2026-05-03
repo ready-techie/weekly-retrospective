@@ -1,0 +1,35 @@
+name: Generate Monthly Retrospective
+
+on:
+  schedule:
+    # 매월 1일 09:00 KST (00:00 UTC)
+    - cron: "0 0 1 * *"
+  workflow_dispatch:
+    inputs:
+      target_month:
+        description: "Target month (YYYY-MM format, defaults to previous month)"
+        required: false
+
+permissions:
+  issues: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Generate monthly retrospective and create issue
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          TARGET_MONTH: ${{ github.event.inputs.target_month }}
+        run: node scripts/generate-monthly.js
