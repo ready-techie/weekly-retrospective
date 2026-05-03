@@ -6,8 +6,6 @@ import ViewPost from "./ViewPost";
 function App() {
   const [posts, setPosts] = useState([]);
 
-  const mdFiles = ["/weekly/2025-01-12-Anne.md", "/weekly/2025-01-19-Anne.md"];
-
   useEffect(() => {
     const fetchPosts = async () => {
       const postFiles = import.meta.glob("/src/weekly/**/*.md");
