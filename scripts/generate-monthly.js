@@ -78,7 +78,7 @@ async function fetchWeeklyIssues({ repo, token, targetMonth }) {
 
   const params = new URLSearchParams({
     labels: WEEKLY_LABEL,
-    state: "all",
+    state: "closed",
     since,
     per_page: "100",
     sort: "created",
