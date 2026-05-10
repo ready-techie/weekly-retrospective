@@ -16,6 +16,9 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'schedule' ||
+      github.actor == 'annemayor'
 
     steps:
       - name: Checkout repository
@@ -28,7 +31,7 @@ jobs:
 
       - name: Generate monthly retrospective and create issue
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
           TARGET_MONTH: ${{ github.event.inputs.target_month }}

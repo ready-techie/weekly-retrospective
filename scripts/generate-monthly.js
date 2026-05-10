@@ -1,4 +1,4 @@
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
 const GITHUB_API_URL = "https://api.github.com";
 const WEEKLY_LABEL = "Weekly\u{1F389}";
 const MONTHLY_LABEL = "\u{1F469}\u200D\u{1F4BB}Monthly";
@@ -47,7 +47,7 @@ const MONTHLY_TEMPLATE = `# Sprint Retrospective - 4 Weeks
 ## *Q4:* :calendar: What are your plans for the next sprint?`;
 
 function validateEnv() {
-  const required = ["GEMINI_API_KEY", "GITHUB_TOKEN", "GITHUB_REPO"];
+  const required = ["OPENAI_API_KEY", "GITHUB_TOKEN", "GITHUB_REPO"];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
@@ -55,7 +55,7 @@ function validateEnv() {
   }
 
   return {
-    geminiApiKey: process.env.GEMINI_API_KEY,
+    openaiApiKey: process.env.OPENAI_API_KEY,
     githubToken: process.env.GITHUB_TOKEN,
     githubRepo: process.env.GITHUB_REPO,
   };
@@ -134,32 +134,34 @@ ${MONTHLY_TEMPLATE}
 ${entriesText}`;
 }
 
-async function callGemini(prompt, apiKey) {
-  const response = await fetchWithRetry(GEMINI_API_URL, {
+async function callOpenAI(prompt, apiKey) {
+  const response = await fetchWithRetry(OPENAI_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "x-goog-api-key": apiKey,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: 4096, temperature: 0.7 },
+      model: "gpt-4o",
+      messages: [{ role: "user", content: prompt }],
+      max_tokens: 4096,
+      temperature: 0.7,
     }),
   });
 
   if (!response.ok) {
     const error = await response.text();
-    throw new Error(`Gemini API error (${response.status}): ${error}`);
+    throw new Error(`OpenAI API error (${response.status}): ${error}`);
   }
 
   const data = await response.json();
 
-  if (!data.candidates?.length || !data.candidates[0].content?.parts?.length) {
-    const blockReason = data.promptFeedback?.blockReason || "unknown";
-    throw new Error(`Gemini returned no content. Block reason: ${blockReason}`);
+  if (!data.choices?.length || !data.choices[0].message?.content) {
+    const reason = data.error?.message || "unknown";
+    throw new Error(`OpenAI returned no content. Reason: ${reason}`);
   }
 
-  return data.candidates[0].content.parts[0].text;
+  return data.choices[0].message.content;
 }
 
 async function verifyLabelExists({ repo, token, label }) {
@@ -223,7 +225,7 @@ async function main() {
   console.log(`Found ${issues.length} weekly issue(s): ${issues.map((i) => i.title).join(", ")}`);
 
   const prompt = buildPrompt(issues, targetMonth);
-  const summary = await callGemini(prompt, env.geminiApiKey);
+  const summary = await callOpenAI(prompt, env.openaiApiKey);
 
   const issue = await createGitHubIssue({
     title: `📅 ${targetMonth} Monthly Retrospective`,
