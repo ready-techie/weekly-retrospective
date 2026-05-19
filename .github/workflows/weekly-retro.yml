@@ -1,0 +1,37 @@
+name: Generate Weekly Retrospective
+
+on:
+  schedule:
+    # 매주 일요일 09:00 KST (00:00 UTC)
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+    inputs:
+      target_date:
+        description: "Target Sunday date (YYYY-MM-DD format, defaults to today KST)"
+        required: false
+
+permissions:
+  issues: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    if: >-
+      github.event_name == 'schedule' ||
+      github.actor == 'annemayor'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+
+      - name: Create weekly retrospective issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          TARGET_DATE: ${{ github.event.inputs.target_date }}
+        run: node scripts/generate-weekly.js
