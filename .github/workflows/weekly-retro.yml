@@ -34,4 +34,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
           TARGET_DATE: ${{ github.event.inputs.target_date }}
+          ASSIGNEES: annemayor,wooooooood,deveeni
         run: node scripts/generate-weekly.js
