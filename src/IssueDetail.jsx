@@ -49,6 +49,8 @@ function IssueDetail() {
     );
   }
 
+  const hasBody = Boolean(issue.body?.trim());
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-2xl mx-auto">
@@ -61,7 +63,7 @@ function IssueDetail() {
           {dayjs(issue.created_at).format("YYYY-MM-DD")}
         </p>
 
-        {issue.body && (
+        {hasBody && (
           <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
             <div className="prose prose-sm max-w-none text-gray-700">
               <ReactMarkdown>{issue.body}</ReactMarkdown>
@@ -69,7 +71,7 @@ function IssueDetail() {
           </div>
         )}
 
-        {!issue.body && comments.length === 0 && (
+        {!hasBody && comments.length === 0 && (
           <p className="text-gray-400 text-center py-12">아직 작성된 회고가 없어요.</p>
         )}
 

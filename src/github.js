@@ -13,12 +13,18 @@ async function apiFetch(url) {
   return data;
 }
 
-export function fetchWeeklyIssues(page = 1) {
-  return apiFetch(`${BASE}/issues?labels=${WEEKLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+function excludeInvalid(issues) {
+  return issues.filter((issue) => !issue.labels.some((l) => l.name === "invalid"));
 }
 
-export function fetchMonthlyIssues(page = 1) {
-  return apiFetch(`${BASE}/issues?labels=${MONTHLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+export async function fetchWeeklyIssues(page = 1) {
+  const data = await apiFetch(`${BASE}/issues?labels=${WEEKLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+  return excludeInvalid(data);
+}
+
+export async function fetchMonthlyIssues(page = 1) {
+  const data = await apiFetch(`${BASE}/issues?labels=${MONTHLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+  return excludeInvalid(data);
 }
 
 export function fetchIssue(number) {
