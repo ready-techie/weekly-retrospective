@@ -61,8 +61,20 @@ function IssueDetail() {
           {dayjs(issue.created_at).format("YYYY-MM-DD")}
         </p>
 
-        {comments.length === 0 && (
+        {issue.body && (
+          <div className="bg-white rounded-lg border border-gray-200 p-6 mb-8">
+            <div className="prose prose-sm max-w-none text-gray-700">
+              <ReactMarkdown>{issue.body}</ReactMarkdown>
+            </div>
+          </div>
+        )}
+
+        {!issue.body && comments.length === 0 && (
           <p className="text-gray-400 text-center py-12">아직 작성된 회고가 없어요.</p>
+        )}
+
+        {comments.length > 0 && (
+          <h2 className="text-base font-semibold text-gray-500 mb-4">개인 회고</h2>
         )}
 
         <div className="space-y-6">
