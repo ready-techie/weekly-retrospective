@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import dayjs from "dayjs";
 import { fetchIssue, fetchComments } from "./github";
 
 function IssueDetail() {
   const { number } = useParams();
+  const navigate = useNavigate();
   const [issue, setIssue] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -54,9 +55,12 @@ function IssueDetail() {
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-2xl mx-auto">
-        <Link to="/" className="text-indigo-600 hover:underline text-sm mb-6 inline-block">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-indigo-600 hover:underline text-sm mb-6 inline-block"
+        >
           ← 목록으로
-        </Link>
+        </button>
 
         <h1 className="text-2xl font-bold text-gray-800 mb-1">{issue.title}</h1>
         <p className="text-sm text-gray-400 mb-8">
