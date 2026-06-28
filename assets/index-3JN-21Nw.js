@@ -11302,7 +11302,7 @@ function requireReactDomClient_production() {
     r: requestFormReset,
     D: prefetchDNS,
     C: preconnect,
-    L: preload2,
+    L: preload,
     m: preloadModule,
     X: preinitScript,
     S: preinitStyle,
@@ -11334,7 +11334,7 @@ function requireReactDomClient_production() {
     previousDispatcher.C(href, crossOrigin);
     preconnectAs("preconnect", href, crossOrigin);
   }
-  function preload2(href, as, options2) {
+  function preload(href, as, options2) {
     previousDispatcher.L(href, as, options2);
     var ownerDocument = globalDocument;
     if (ownerDocument && href && as) {
@@ -12534,70 +12534,6 @@ function requireClient() {
   return client.exports;
 }
 var clientExports = requireClient();
-const scriptRel = "modulepreload";
-const assetsURL = function(dep) {
-  return "/weekly-retrospective/" + dep;
-};
-const seen = {};
-const __vitePreload = function preload(baseModule, deps, importerUrl) {
-  let promise = Promise.resolve();
-  if (deps && deps.length > 0) {
-    document.getElementsByTagName("link");
-    const cspNonceMeta = document.querySelector(
-      "meta[property=csp-nonce]"
-    );
-    const cspNonce = (cspNonceMeta == null ? void 0 : cspNonceMeta.nonce) || (cspNonceMeta == null ? void 0 : cspNonceMeta.getAttribute("nonce"));
-    promise = Promise.allSettled(
-      deps.map((dep) => {
-        dep = assetsURL(dep);
-        if (dep in seen) return;
-        seen[dep] = true;
-        const isCss = dep.endsWith(".css");
-        const cssSelector = isCss ? '[rel="stylesheet"]' : "";
-        if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
-          return;
-        }
-        const link2 = document.createElement("link");
-        link2.rel = isCss ? "stylesheet" : scriptRel;
-        if (!isCss) {
-          link2.as = "script";
-        }
-        link2.crossOrigin = "";
-        link2.href = dep;
-        if (cspNonce) {
-          link2.setAttribute("nonce", cspNonce);
-        }
-        document.head.appendChild(link2);
-        if (isCss) {
-          return new Promise((res, rej) => {
-            link2.addEventListener("load", res);
-            link2.addEventListener(
-              "error",
-              () => rej(new Error(`Unable to preload CSS for ${dep}`))
-            );
-          });
-        }
-      })
-    );
-  }
-  function handlePreloadError(err) {
-    const e = new Event("vite:preloadError", {
-      cancelable: true
-    });
-    e.payload = err;
-    window.dispatchEvent(e);
-    if (!e.defaultPrevented) {
-      throw err;
-    }
-  }
-  return promise.then((res) => {
-    for (const item of res || []) {
-      if (item.status !== "rejected") continue;
-      handlePreloadError(item.reason);
-    }
-    return baseModule().catch(handlePreloadError);
-  });
-};
 /**
  * react-router v7.14.2
  *
@@ -15267,6 +15203,111 @@ function requireDayjs_min() {
 }
 var dayjs_minExports = requireDayjs_min();
 const dayjs = /* @__PURE__ */ getDefaultExportFromCjs(dayjs_minExports);
+const BASE = "https://api.github.com/repos/ready-techie/weekly-retrospective";
+const WEEKLY_LABEL = encodeURIComponent("Weekly🎉");
+const MONTHLY_LABEL = encodeURIComponent("👩‍💻Monthly");
+async function apiFetch(url) {
+  const cached = sessionStorage.getItem(url);
+  if (cached) return JSON.parse(cached);
+  const res = await fetch(url, { headers: { Accept: "application/vnd.github+json" } });
+  if (!res.ok) throw new Error(`GitHub API ${res.status}`);
+  const data = await res.json();
+  sessionStorage.setItem(url, JSON.stringify(data));
+  return data;
+}
+function fetchWeeklyIssues(page = 1) {
+  return apiFetch(`${BASE}/issues?labels=${WEEKLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+}
+function fetchMonthlyIssues(page = 1) {
+  return apiFetch(`${BASE}/issues?labels=${MONTHLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+}
+function fetchIssue(number2) {
+  return apiFetch(`${BASE}/issues/${number2}`);
+}
+function fetchComments(number2) {
+  return apiFetch(`${BASE}/issues/${number2}/comments?per_page=100`);
+}
+const TABS = [
+  { key: "weekly", label: "주간 회고", fetcher: fetchWeeklyIssues },
+  { key: "monthly", label: "월간 회고", fetcher: fetchMonthlyIssues }
+];
+const PAGE_SIZE = 100;
+function IssueList() {
+  const [tab2, setTab] = reactExports.useState("weekly");
+  const [issues, setIssues] = reactExports.useState([]);
+  const [page, setPage] = reactExports.useState(1);
+  const [hasMore, setHasMore] = reactExports.useState(false);
+  const [loading, setLoading] = reactExports.useState(true);
+  const [loadingMore, setLoadingMore] = reactExports.useState(false);
+  const [error, setError] = reactExports.useState(null);
+  const [loadMoreError, setLoadMoreError] = reactExports.useState(null);
+  reactExports.useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setLoadMoreError(null);
+    setPage(1);
+    const { fetcher } = TABS.find((t) => t.key === tab2);
+    fetcher(1).then((data) => {
+      setIssues(data);
+      setHasMore(data.length === PAGE_SIZE);
+    }).catch((e) => setError(e.message)).finally(() => setLoading(false));
+  }, [tab2]);
+  function loadMore() {
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    setLoadMoreError(null);
+    const { fetcher } = TABS.find((t) => t.key === tab2);
+    fetcher(nextPage).then((data) => {
+      setIssues((prev) => [...prev, ...data]);
+      setPage(nextPage);
+      setHasMore(data.length === PAGE_SIZE);
+    }).catch((e) => setLoadMoreError(e.message)).finally(() => setLoadingMore(false));
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-gray-50 py-10 px-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-2xl mx-auto", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-gray-800 mb-6", children: "Weekly Retrospective" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "flex gap-2 mb-6", children: TABS.map(({ key, label }) => /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "button",
+      {
+        onClick: () => setTab(key),
+        className: `px-4 py-2 rounded-full text-sm font-medium transition-colors ${tab2 === key ? "bg-indigo-600 text-white" : "bg-white text-gray-600 border border-gray-300 hover:bg-gray-100"}`,
+        children: label
+      },
+      key
+    )) }),
+    loading && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-gray-500", children: "불러오는 중..." }),
+    error && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-red-500", children: [
+      "오류: ",
+      error
+    ] }),
+    !loading && !error && issues.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-gray-400 text-center py-12", children: "아직 등록된 회고가 없어요." }),
+    !loading && !error && /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsx("ul", { className: "space-y-2", children: issues.map((issue) => /* @__PURE__ */ jsxRuntimeExports.jsx("li", { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(
+        Link,
+        {
+          to: `/${issue.number}`,
+          className: "flex items-center justify-between p-4 bg-white rounded-lg border border-gray-200 hover:border-indigo-400 hover:shadow-sm transition-all",
+          children: [
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-gray-800 font-medium", children: issue.title }),
+            /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "text-sm text-gray-400 shrink-0 ml-4", children: dayjs(issue.created_at).format("YYYY-MM-DD") })
+          ]
+        }
+      ) }, issue.number)) }),
+      loadMoreError && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "mt-4 text-center text-red-500", children: [
+        "오류: ",
+        loadMoreError
+      ] }),
+      hasMore && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "mt-6 text-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx(
+        "button",
+        {
+          onClick: loadMore,
+          disabled: loadingMore,
+          className: "px-6 py-2 bg-white text-gray-600 border border-gray-300 rounded-full text-sm font-medium hover:bg-gray-100 disabled:opacity-50 transition-colors",
+          children: loadingMore ? "불러오는 중..." : "더 불러오기"
+        }
+      ) })
+    ] })
+  ] }) });
+}
 function ok$1() {
 }
 function unreachable() {
@@ -17660,15 +17701,15 @@ function initializeDocument(effects) {
       }
       const indexBeforeExits = self2.events.length;
       let indexBeforeFlow = indexBeforeExits;
-      let seen2;
+      let seen;
       let point2;
       while (indexBeforeFlow--) {
         if (self2.events[indexBeforeFlow][0] === "exit" && self2.events[indexBeforeFlow][1].type === "chunkFlow") {
-          if (seen2) {
+          if (seen) {
             point2 = self2.events[indexBeforeFlow][1].end;
             break;
           }
-          seen2 = true;
+          seen = true;
         }
       }
       exitContainers(continued);
@@ -18958,7 +18999,7 @@ function factoryDestination(effects, ok2, nok, type, literalType, literalMarkerT
 function factoryLabel(effects, ok2, nok, type, markerType, stringType) {
   const self2 = this;
   let size = 0;
-  let seen2;
+  let seen;
   return start;
   function start(code2) {
     effects.enter(type);
@@ -18969,7 +19010,7 @@ function factoryLabel(effects, ok2, nok, type, markerType, stringType) {
     return atBreak;
   }
   function atBreak(code2) {
-    if (size > 999 || code2 === null || code2 === 91 || code2 === 93 && !seen2 || // To do: remove in the future once we’ve switched from
+    if (size > 999 || code2 === null || code2 === 91 || code2 === 93 && !seen || // To do: remove in the future once we’ve switched from
     // `micromark-extension-footnote` to `micromark-extension-gfm-footnote`,
     // which doesn’t need this.
     // Hidden footnotes hook.
@@ -19002,7 +19043,7 @@ function factoryLabel(effects, ok2, nok, type, markerType, stringType) {
       return atBreak(code2);
     }
     effects.consume(code2);
-    if (!seen2) seen2 = !markdownSpace(code2);
+    if (!seen) seen = !markdownSpace(code2);
     return code2 === 92 ? labelEscape : labelInside;
   }
   function labelEscape(code2) {
@@ -19075,18 +19116,18 @@ function factoryTitle(effects, ok2, nok, type, markerType, stringType) {
   }
 }
 function factoryWhitespace(effects, ok2) {
-  let seen2;
+  let seen;
   return start;
   function start(code2) {
     if (markdownLineEnding(code2)) {
       effects.enter("lineEnding");
       effects.consume(code2);
       effects.exit("lineEnding");
-      seen2 = true;
+      seen = true;
       return start;
     }
     if (markdownSpace(code2)) {
-      return factorySpace(effects, start, seen2 ? "linePrefix" : "lineSuffix")(code2);
+      return factorySpace(effects, start, seen ? "linePrefix" : "lineSuffix")(code2);
     }
     return ok2(code2);
   }
@@ -24800,66 +24841,63 @@ function defaultUrlTransform(value) {
   }
   return "";
 }
-function ViewPost() {
-  const { filePath } = useParams();
-  const [post2, setPost] = reactExports.useState(null);
+function IssueDetail() {
+  const { number: number2 } = useParams();
+  const [issue, setIssue] = reactExports.useState(null);
+  const [comments, setComments] = reactExports.useState([]);
+  const [loading, setLoading] = reactExports.useState(true);
+  const [error, setError] = reactExports.useState(null);
   reactExports.useEffect(() => {
-    const loadPost = async () => {
-      const response = await fetch(filePath);
-      const content2 = await response.text();
-      const date = dayjs(
-        filePath.split("/")[3].split("-").slice(0, 3).join("-")
-      );
-      const player = filePath.split("/")[3].split("-").slice(-1)[0].replace(".md", "");
-      setPost({ date, content: content2, player });
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    Promise.all([fetchIssue(number2), fetchComments(number2)]).then(([issueData, commentsData]) => {
+      if (cancelled) return;
+      setIssue(issueData);
+      setComments(commentsData);
+    }).catch((e) => {
+      if (!cancelled) setError(e.message);
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+    return () => {
+      cancelled = true;
     };
-    loadPost();
-  }, [filePath]);
-  if (!post2) {
-    return /* @__PURE__ */ jsxRuntimeExports.jsx("p", { children: "Loading..." });
+  }, [number2]);
+  if (loading) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-gray-50 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-gray-500", children: "불러오는 중..." }) });
   }
-  return /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsxs("h2", { children: [
-      post2.date.format("YYYY-MM-DD"),
-      " by ",
-      post2.player
-    ] }),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Markdown, { children: post2.content })
-  ] });
+  if (error) {
+    return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-gray-50 flex items-center justify-center", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-red-500", children: [
+      "오류: ",
+      error
+    ] }) });
+  }
+  return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-gray-50 py-10 px-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-2xl mx-auto", children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/", className: "text-indigo-600 hover:underline text-sm mb-6 inline-block", children: "← 목록으로" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-gray-800 mb-1", children: issue.title }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-gray-400 mb-8", children: dayjs(issue.created_at).format("YYYY-MM-DD") }),
+    comments.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-gray-400 text-center py-12", children: "아직 작성된 회고가 없어요." }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-6", children: comments.map((comment) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-white rounded-lg border border-gray-200 p-6", children: [
+      /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-4", children: [
+        /* @__PURE__ */ jsxRuntimeExports.jsx(
+          "img",
+          {
+            src: comment.user.avatar_url,
+            alt: comment.user.login,
+            className: "w-8 h-8 rounded-full"
+          }
+        ),
+        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "font-medium text-gray-700", children: comment.user.login })
+      ] }),
+      /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "prose prose-sm max-w-none text-gray-700", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Markdown, { children: comment.body }) })
+    ] }, comment.id)) })
+  ] }) });
 }
 function App() {
-  const [posts, setPosts] = reactExports.useState([]);
-  reactExports.useEffect(() => {
-    const fetchPosts = async () => {
-      const postFiles = /* @__PURE__ */ Object.assign({ "/src/weekly/2025-01-12-Anne.md": () => __vitePreload(() => import("./2025-01-12-Anne-CS7prWtz.js"), true ? [] : void 0), "/src/weekly/2025-01-19-Anne.md": () => __vitePreload(() => import("./2025-01-19-Anne-BqO3T_Z5.js"), true ? [] : void 0) });
-      const postPromises = Object.keys(postFiles).map(async (filePath) => {
-        const date = dayjs(
-          filePath.split("/")[3].split("-").slice(0, 3).join("-")
-        );
-        const player = filePath.split("/")[3].split("-").slice(-1)[0].replace(".md", "");
-        console.log({ filePath, date, player });
-        return { filePath, date, player };
-      });
-      const posts2 = await Promise.all(postPromises);
-      posts2.sort((a, b) => b.date - a.date);
-      console.log(posts2);
-      setPosts(posts2);
-    };
-    fetchPosts();
-  }, []);
-  return /* @__PURE__ */ jsxRuntimeExports.jsx(BrowserRouter, { children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Routes, { children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(
-      Route,
-      {
-        path: "/",
-        element: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: posts.map((post2, index2) => /* @__PURE__ */ jsxRuntimeExports.jsx("div", { children: /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: `/${encodeURIComponent(post2.filePath)}`, children: /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { children: [
-          post2.date.format("YYYY-MM-DD"),
-          " ",
-          post2.player
-        ] }) }) }, index2)) })
-      }
-    ),
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { path: "/:filePath", element: /* @__PURE__ */ jsxRuntimeExports.jsx(ViewPost, {}) })
+  return /* @__PURE__ */ jsxRuntimeExports.jsx(BrowserRouter, { basename: "/weekly-retrospective", children: /* @__PURE__ */ jsxRuntimeExports.jsxs(Routes, { children: [
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { path: "/", element: /* @__PURE__ */ jsxRuntimeExports.jsx(IssueList, {}) }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(Route, { path: "/:number", element: /* @__PURE__ */ jsxRuntimeExports.jsx(IssueDetail, {}) })
   ] }) });
 }
 clientExports.createRoot(document.getElementById("root")).render(
