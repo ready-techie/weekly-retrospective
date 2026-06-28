@@ -24907,6 +24907,7 @@ function defaultUrlTransform(value) {
 function IssueDetail() {
   var _a;
   const { number: number2 } = useParams();
+  const navigate = useNavigate();
   const [issue, setIssue] = reactExports.useState(null);
   const [comments, setComments] = reactExports.useState([]);
   const [loading, setLoading] = reactExports.useState(true);
@@ -24939,7 +24940,14 @@ function IssueDetail() {
   }
   const hasBody = Boolean((_a = issue.body) == null ? void 0 : _a.trim());
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-gray-50 py-10 px-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-2xl mx-auto", children: [
-    /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/", className: "text-indigo-600 hover:underline text-sm mb-6 inline-block", children: "← 목록으로" }),
+    /* @__PURE__ */ jsxRuntimeExports.jsx(
+      "button",
+      {
+        onClick: () => navigate(-1),
+        className: "text-indigo-600 hover:underline text-sm mb-6 inline-block",
+        children: "← 목록으로"
+      }
+    ),
     /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-gray-800 mb-1", children: issue.title }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-gray-400 mb-8", children: dayjs(issue.created_at).format("YYYY-MM-DD") }),
     hasBody && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-white rounded-lg border border-gray-200 p-6 mb-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "prose prose-sm max-w-none text-gray-700", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Markdown, { children: issue.body }) }) }),
