@@ -15215,11 +15215,16 @@ async function apiFetch(url) {
   sessionStorage.setItem(url, JSON.stringify(data));
   return data;
 }
-function fetchWeeklyIssues(page = 1) {
-  return apiFetch(`${BASE}/issues?labels=${WEEKLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+function excludeInvalid(issues) {
+  return issues.filter((issue) => !issue.labels.some((l) => l.name === "invalid"));
 }
-function fetchMonthlyIssues(page = 1) {
-  return apiFetch(`${BASE}/issues?labels=${MONTHLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+async function fetchWeeklyIssues(page = 1) {
+  const data = await apiFetch(`${BASE}/issues?labels=${WEEKLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+  return excludeInvalid(data);
+}
+async function fetchMonthlyIssues(page = 1) {
+  const data = await apiFetch(`${BASE}/issues?labels=${MONTHLY_LABEL}&state=all&per_page=100&sort=created&direction=desc&page=${page}`);
+  return excludeInvalid(data);
 }
 function fetchIssue(number2) {
   return apiFetch(`${BASE}/issues/${number2}`);
@@ -24842,6 +24847,7 @@ function defaultUrlTransform(value) {
   return "";
 }
 function IssueDetail() {
+  var _a;
   const { number: number2 } = useParams();
   const [issue, setIssue] = reactExports.useState(null);
   const [comments, setComments] = reactExports.useState([]);
@@ -24873,11 +24879,14 @@ function IssueDetail() {
       error
     ] }) });
   }
+  const hasBody = Boolean((_a = issue.body) == null ? void 0 : _a.trim());
   return /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "min-h-screen bg-gray-50 py-10 px-4", children: /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "max-w-2xl mx-auto", children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(Link, { to: "/", className: "text-indigo-600 hover:underline text-sm mb-6 inline-block", children: "← 목록으로" }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("h1", { className: "text-2xl font-bold text-gray-800 mb-1", children: issue.title }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-sm text-gray-400 mb-8", children: dayjs(issue.created_at).format("YYYY-MM-DD") }),
-    comments.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-gray-400 text-center py-12", children: "아직 작성된 회고가 없어요." }),
+    hasBody && /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "bg-white rounded-lg border border-gray-200 p-6 mb-8", children: /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "prose prose-sm max-w-none text-gray-700", children: /* @__PURE__ */ jsxRuntimeExports.jsx(Markdown, { children: issue.body }) }) }),
+    !hasBody && comments.length === 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("p", { className: "text-gray-400 text-center py-12", children: "아직 작성된 회고가 없어요." }),
+    comments.length > 0 && /* @__PURE__ */ jsxRuntimeExports.jsx("h2", { className: "text-base font-semibold text-gray-500 mb-4", children: "개인 회고" }),
     /* @__PURE__ */ jsxRuntimeExports.jsx("div", { className: "space-y-6", children: comments.map((comment) => /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "bg-white rounded-lg border border-gray-200 p-6", children: [
       /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-center gap-3 mb-4", children: [
         /* @__PURE__ */ jsxRuntimeExports.jsx(
