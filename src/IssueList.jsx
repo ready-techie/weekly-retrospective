@@ -18,6 +18,12 @@ function IssueList() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setLoadMoreError(null);
+    setPage(1);
+    const { fetcher } = TABS.find((t) => t.key === tab);
 
   useEffect(() => {
     setLoading(true);
@@ -36,6 +42,7 @@ function IssueList() {
   function loadMore() {
     const nextPage = page + 1;
     setLoadingMore(true);
+    setLoadMoreError(null);
     const { fetcher } = TABS.find((t) => t.key === tab);
     fetcher(nextPage)
       .then((data) => {
@@ -43,7 +50,7 @@ function IssueList() {
         setPage(nextPage);
         setHasMore(data.length === PAGE_SIZE);
       })
-      .catch((e) => setError(e.message))
+      .catch((e) => setLoadMoreError(e.message))
       .finally(() => setLoadingMore(false));
   }
 
@@ -92,6 +99,10 @@ function IssueList() {
                 </li>
               ))}
             </ul>
+
+            {loadMoreError && (
+              <p className="mt-4 text-center text-red-500">오류: {loadMoreError}</p>
+            )}
 
             {hasMore && (
               <div className="mt-6 text-center">

@@ -12,15 +12,25 @@ function IssueDetail() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    let cancelled = false;
     setLoading(true);
     setError(null);
     Promise.all([fetchIssue(number), fetchComments(number)])
       .then(([issueData, commentsData]) => {
+        if (cancelled) return;
         setIssue(issueData);
         setComments(commentsData);
       })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+      .catch((e) => {
+        if (!cancelled) setError(e.message);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [number]);
 
   if (loading) {
