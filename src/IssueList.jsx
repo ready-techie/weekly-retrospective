@@ -18,16 +18,12 @@ function IssueList() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  useEffect(() => {
-    setLoading(true);
-    setError(null);
-    setLoadMoreError(null);
-    setPage(1);
-    const { fetcher } = TABS.find((t) => t.key === tab);
+  const [loadMoreError, setLoadMoreError] = useState(null);
 
   useEffect(() => {
     setLoading(true);
     setError(null);
+    setLoadMoreError(null);
     setPage(1);
     const { fetcher } = TABS.find((t) => t.key === tab);
     fetcher(1)
