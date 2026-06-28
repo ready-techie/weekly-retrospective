@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { fetchWeeklyIssues, fetchMonthlyIssues } from "./github";
 
@@ -10,8 +10,11 @@ const TABS = [
 
 const PAGE_SIZE = 100;
 
+const VALID_TABS = new Set(TABS.map((t) => t.key));
+
 function IssueList() {
-  const [tab, setTab] = useState("weekly");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = VALID_TABS.has(searchParams.get("tab")) ? searchParams.get("tab") : "weekly";
   const [issues, setIssues] = useState([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -59,7 +62,7 @@ function IssueList() {
           {TABS.map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setTab(key)}
+              onClick={() => setSearchParams({ tab: key })}
               className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
                 tab === key
                   ? "bg-indigo-600 text-white"
